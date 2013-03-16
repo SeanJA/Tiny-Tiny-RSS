@@ -1312,6 +1312,86 @@ function catchupRelativeToArticle(below, id) {
 	}
 }
 
+function markAsUnread(id) {
+        if($("RROW-" + id).hasClassName('Unread')){
+            return;
+        }
+	try {
+            
+            if (!id) id = getActiveArticleId();
+
+            if (!id) {
+                alert(__("No article is selected."));
+                return;
+            }
+
+            var ids_to_mark = new Array(id);
+
+            ids_to_mark.push(id);
+
+            if (ids_to_mark.length == 0) {
+                alert(__("No articles found to mark"));
+            } else {
+
+                var query = "?op=rpc&method=catchupSelected" +
+                "&cmode=1" + "&ids=" + param_escape(ids_to_mark.toString());
+
+                new Ajax.Request("backend.php", {
+                    parameters: query,
+                    onComplete: function(transport) {
+                        $("RROW-" + id).addClassName('Unread');
+                        handle_rpc_json(transport);
+
+                    }
+                });
+
+            }
+
+    } catch (e) {
+        exception_error("markAsUnread", e);
+    }
+}
+
+function markAsRead(id) {
+        if(!$("RROW-" + id).hasClassName('Unread')){
+            return;
+        }
+	try {
+            
+            if (!id) id = getActiveArticleId();
+
+            if (!id) {
+                alert(__("No article is selected."));
+                return;
+            }
+
+            var ids_to_mark = new Array(id);
+
+            ids_to_mark.push(id);
+
+            if (ids_to_mark.length == 0) {
+                alert(__("No articles found to mark"));
+            } else {
+
+                var query = "?op=rpc&method=catchupSelected" +
+                "&cmode=0" + "&ids=" + param_escape(ids_to_mark.toString());
+
+                new Ajax.Request("backend.php", {
+                    parameters: query,
+                    onComplete: function(transport) {
+                        $("RROW-" + id).removeClassName('Unread');
+                        handle_rpc_json(transport);
+
+                    }
+                });
+
+            }
+
+    } catch (e) {
+        exception_error("markAsUnread", e);
+    }
+}
+
 function cdmExpandArticle(id) {
 	try {
 
@@ -1759,6 +1839,18 @@ function initHeadlinesMenu() {
 			onClick: function(event) {
 				catchupRelativeToArticle(1, this.getParent().callerRowId);
 				}}));
+
+                menu.addChild(new dijit.MenuItem({
+			label: __("Mark as Unread"),
+			onClick: function(event) {
+				markAsUnread(this.getParent().callerRowId);
+			}}));
+
+                menu.addChild(new dijit.MenuItem({
+			label: __("Mark as Read"),
+			onClick: function(event) {
+				markAsRead(this.getParent().callerRowId);
+			}}));
 
 
 		var labels = dijit.byId("feedTree").model.getItemsInCategory(-2);
