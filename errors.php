@@ -28,8 +28,7 @@
 
 	$ERRORS[9] = __("Configuration check failed");
 
-	$ERRORS[10] = __("Your version of MySQL is not currently supported. Please see
-		official site for more information.");
+	$ERRORS[10] = __("Your version of MySQL is not currently supported. Please see official site for more information.");
 
 	$ERRORS[11] = "[This error is not returned by server]";
 
