@@ -1126,7 +1126,7 @@ function editArticleTags(id) {
 					}});
 				}
 			},
-			href: query,
+			href: query
 		});
 
 		var tmph = dojo.connect(dialog, 'onLoad', function() {
@@ -1797,7 +1797,7 @@ function initHeadlinesMenu() {
 
 		var menu = new dijit.Menu({
 			id: "headlinesMenu",
-			targetNodeIds: ids,
+			targetNodeIds: ids
 		});
 
 		var tmph = dojo.connect(menu, '_openMyself', function (event) {
@@ -1893,12 +1893,12 @@ function initHeadlinesMenu() {
 
 			menu.addChild(new dijit.PopupMenuItem({
 				label: __("Assign label"),
-				popup: labelAddMenu,
+				popup: labelAddMenu
 			}));
 
 			menu.addChild(new dijit.PopupMenuItem({
 				label: __("Remove label"),
-				popup: labelDelMenu,
+				popup: labelDelMenu
 			}));
 
 		}
