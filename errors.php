@@ -12,7 +12,7 @@
 	$ERRORS[2] = __("This program requires cookies " .
 			"to function properly. Your browser doesn't seem to support them.");
 
-	$ERRORS[3] = __("Backend sanity check failed");
+	$ERRORS[3] = __("Backend sanity check failed.");
 
 	$ERRORS[4] = __("Frontend sanity check failed.");
 

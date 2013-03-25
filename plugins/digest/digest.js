@@ -68,7 +68,7 @@ function catchup_visible_articles(callback) {
 
 		var ids = get_visible_article_ids();
 
-		if (confirm(__("Mark %d displayed articles as read?").replace("%d", ids.length))) {
+		if (confirm(ngettext("Mark %d displayed article as read?", "Mark %d displayed articles as read?", ids.length).replace("%d", ids.length))) {
 
 			var query = "?op=rpc&method=catchupSelected" +
 				"&cmode=0&ids=" + param_escape(ids);
@@ -515,7 +515,7 @@ function redraw_feedlist(feeds) {
 			$('feeds-content').innerHTML += "<li id='F-MORE-PROMPT'>" +
 				"<img src='images/blank_icon.gif'>" +
 				"<a href=\"#\" onclick=\"expand_feeds()\">" +
-				__("%d more...").replace("%d", feeds.length-10) +
+				ngettext("%d more...", "%d more...", feeds.length-10).replace("%d", feeds.length-10) +
 				"</a>" + "</li>";
 		}
 
@@ -670,8 +670,6 @@ function init_second_stage() {
 
 function init() {
 	try {
-		dojo.require("dijit.Dialog");
-
 		new Ajax.Request("backend.php", {
 			parameters: {op: "rpc", method: "sanityCheck"},
 			onComplete: function(transport) {

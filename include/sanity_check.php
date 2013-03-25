@@ -36,6 +36,10 @@
 				array_push($errors, "Data export cache is not writable (chmod -R 777 ".CACHE_DIR."/export)");
 			}
 
+			if (!is_writable(CACHE_DIR . "/js")) {
+				array_push($errors, "Javascript cache is not writable (chmod -R 777 ".CACHE_DIR."/js)");
+			}
+
 			if (GENERATED_CONFIG_CHECK != EXPECTED_CONFIG_VERSION) {
 				array_push($errors,
 					"Configuration option checker sanity_config.php is outdated, please recreate it using ./utils/regen_config_checks.sh");
@@ -117,9 +121,13 @@
 				array_push($errors, "PHP support for ctype functions are required by HTMLPurifier.");
 			}
 
-			if (ini_get("safe_mode")) {
-				array_push($errors, "PHP safe mode setting is not supported.");
+			if (!function_exists("iconv")) {
+				array_push($errors, "PHP support for iconv is required to handle multiple charsets.");
 			}
+
+			/* if (ini_get("safe_mode")) {
+				array_push($errors, "PHP safe mode setting is not supported.");
+			} */
 
 			if ((PUBSUBHUBBUB_HUB || PUBSUBHUBBUB_ENABLED) && !function_exists("curl_init")) {
 				array_push($errors, "PHP support for CURL is required for PubSubHubbub.");

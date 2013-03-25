@@ -42,10 +42,16 @@ class Pref_Prefs extends Handler_Protected {
 
 		$_SESSION["prefs_cache"] = false;
 
+		$boolean_prefs = explode(",", $_POST["boolean_prefs"]);
+
+		foreach ($boolean_prefs as $pref) {
+			if (!isset($_POST[$pref])) $_POST[$pref] = 'false';
+		}
+
 		foreach (array_keys($_POST) as $pref_name) {
 
-			$pref_name = db_escape_string($pref_name);
-			$value = db_escape_string($_POST[$pref_name]);
+			$pref_name = db_escape_string($this->link, $pref_name);
+			$value = db_escape_string($this->link, $_POST[$pref_name]);
 
 			if ($pref_name == 'DIGEST_PREFERRED_TIME') {
 				if (get_pref($this->link, 'DIGEST_PREFERRED_TIME') != $value) {
@@ -65,7 +71,7 @@ class Pref_Prefs extends Handler_Protected {
 
 	function getHelp() {
 
-		$pref_name = db_escape_string($_REQUEST["pn"]);
+		$pref_name = db_escape_string($this->link, $_REQUEST["pn"]);
 
 		$result = db_query($this->link, "SELECT help_text FROM ttrss_prefs
 			WHERE pref_name = '$pref_name'");
@@ -80,8 +86,8 @@ class Pref_Prefs extends Handler_Protected {
 
 	function changeemail() {
 
-		$email = db_escape_string($_POST["email"]);
-		$full_name = db_escape_string($_POST["full_name"]);
+		$email = db_escape_string($this->link, $_POST["email"]);
+		$full_name = db_escape_string($this->link, $_POST["full_name"]);
 
 		$active_uid = $_SESSION["uid"];
 
@@ -227,7 +233,7 @@ class Pref_Prefs extends Handler_Protected {
 			</script>";
 
 			if ($otp_enabled) {
-				print_notice("Changing your current password will disable OTP.");
+				print_notice(__("Changing your current password will disable OTP."));
 			}
 
 			print "<table width=\"100%\" class=\"prefPrefsList\">";
@@ -260,7 +266,7 @@ class Pref_Prefs extends Handler_Protected {
 
 				if ($otp_enabled) {
 
-					print_notice("One time passwords are currently enabled. Enter your current password below to disable.");
+					print_notice(__("One time passwords are currently enabled. Enter your current password below to disable."));
 
 					print "<form dojoType=\"dijit.form.Form\">";
 
@@ -395,7 +401,7 @@ class Pref_Prefs extends Handler_Protected {
 		print '<div dojoType="dijit.layout.ContentPane" region="center" style="overflow-y : auto">';
 
 		if ($_SESSION["profile"]) {
-			print_notice("Some preferences are only available in default profile.");
+			print_notice(__("Some preferences are only available in default profile."));
 		}
 
 		if ($_SESSION["profile"]) {
@@ -428,6 +434,8 @@ class Pref_Prefs extends Handler_Protected {
 		$lnum = 0;
 
 		$active_section = "";
+
+		$listed_boolean_prefs = array();
 
 		while ($line = db_fetch_assoc($result)) {
 
@@ -463,7 +471,10 @@ class Pref_Prefs extends Handler_Protected {
 			$def_value = $line["def_value"];
 			$help_text = $line["help_text"];
 
-			print "<td width=\"40%\" class=\"prefName\" id=\"$pref_name\">" . __($line["short_desc"]);
+			print "<td width=\"40%\" class=\"prefName\" id=\"$pref_name\">";
+			print "<label for='CB_$pref_name'>";
+			print __($line["short_desc"]);
+			print "</label>";
 
 			if ($help_text) print "<div class=\"prefHelp\">".__($help_text)."</div>";
 
@@ -497,21 +508,19 @@ class Pref_Prefs extends Handler_Protected {
 
 			} else if ($type_name == "bool") {
 
-				if ($value == "true") {
-					$value = __("Yes");
-				} else {
-					$value = __("No");
-				}
+				array_push($listed_boolean_prefs, $pref_name);
+
+				$checked = ($value == "true") ? "checked=\"checked\"" : "";
 
 				if ($pref_name == "PURGE_UNREAD_ARTICLES" && FORCE_ARTICLE_PURGE != 0) {
 					$disabled = "disabled=\"1\"";
-					$value = __("Yes");
+					$checked = "checked=\"checked\"";
 				} else {
 					$disabled = "";
 				}
 
-				print_radio($pref_name, $value, __("Yes"), array(__("Yes"), __("No")),
-					$disabled);
+				print "<input type='checkbox' name='$pref_name' $checked $disabled
+					dojoType='dijit.form.CheckBox' id='CB_$pref_name' value='1'>";
 
 			} else if (array_search($pref_name, array('FRESH_ARTICLE_MAX_AGE', 'DEFAULT_ARTICLE_LIMIT',
 					'PURGE_OLD_DAYS', 'LONG_DATE_FORMAT', 'SHORT_DATE_FORMAT')) !== false) {
@@ -568,6 +577,10 @@ class Pref_Prefs extends Handler_Protected {
 
 		print "</table>";
 
+		$listed_boolean_prefs = htmlspecialchars(join(",", $listed_boolean_prefs));
+
+		print "<input dojoType=\"dijit.form.TextBox\" style=\"display : none\" name=\"boolean_prefs\" value=\"$listed_boolean_prefs\">";
+
 		global $pluginhost;
 		$pluginhost->run_hooks($pluginhost::HOOK_PREFS_TAB_SECTION,
 			"hook_prefs_tab_section", "prefPrefsPrefsInside");
@@ -613,7 +626,7 @@ class Pref_Prefs extends Handler_Protected {
 
 		print "<h2>".__("Plugins")."</h2>";
 
-		print_notice("You will need to reload Tiny Tiny RSS for plugin changes to take effect.");
+		print_notice(__("You will need to reload Tiny Tiny RSS for plugin changes to take effect."));
 
 		print "<form dojoType=\"dijit.form.Form\" id=\"changePluginsForm\">";
 
@@ -785,7 +798,7 @@ class Pref_Prefs extends Handler_Protected {
 	}
 
 	function otpenable() {
-		$password = db_escape_string($_REQUEST["password"]);
+		$password = db_escape_string($this->link, $_REQUEST["password"]);
 		$enable_otp = $_REQUEST["enable_otp"] == "on";
 
 		global $pluginhost;
@@ -806,7 +819,7 @@ class Pref_Prefs extends Handler_Protected {
 	}
 
 	function otpdisable() {
-		$password = db_escape_string($_REQUEST["password"]);
+		$password = db_escape_string($this->link, $_REQUEST["password"]);
 
 		global $pluginhost;
 		$authenticator = $pluginhost->get_plugin($_SESSION["auth_module"]);
@@ -833,7 +846,7 @@ class Pref_Prefs extends Handler_Protected {
 	}
 
 	function clearplugindata() {
-		$name = db_escape_string($_REQUEST["name"]);
+		$name = db_escape_string($this->link, $_REQUEST["name"]);
 
 		global $pluginhost;
 		$pluginhost->clear_data($pluginhost->get_plugin($name));
