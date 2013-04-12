@@ -26,7 +26,8 @@
 
 	define('SINGLE_USER_MODE', false);
 	// Operate in single user mode, disables all functionality related to
-	// multiple users.
+	// multiple users and authentication. Enabling this assumes you have
+	// your tt-rss directory protected by other means (e.g. http auth).
 
 	define('SIMPLE_UPDATE_MODE', false);
 	// Enables fallback update mode where tt-rss tries to update feeds in
@@ -109,7 +110,7 @@
 	// ***********************************
 
 	define('ENABLE_REGISTRATION', false);
-	// Allow users to register themselves. Please be vary that allowing
+	// Allow users to register themselves. Please be aware that allowing
 	// random people to access your tt-rss installation is a security risk
 	// and potentially might lead to data loss or server exploit. Disabled
 	// by default.
@@ -125,15 +126,13 @@
 	// *** Cookies and login sessions ***
 	// **********************************
 	
-	define('SESSION_COOKIE_LIFETIME', 86400*30);
+	define('SESSION_COOKIE_LIFETIME', 86400);
 	// Default lifetime of a session (e.g. login) cookie. In seconds, 
 	// 0 means cookie will be deleted when browser closes.
 	// Setting this to zero will affect several user preferences
-	// like widescreen mode not saving.
-
-	define('SESSION_EXPIRE_TIME', 86400*30);
-	// Hard expiration limit for sessions. Should be
-	// greater or equal to SESSION_COOKIE_LIFETIME
+	// like widescreen mode not saving and disable "remember me".
+	// Note that if remember me is not checked, session cookie
+	// will always expire with browser session.
 
 	define('SESSION_CHECK_ADDRESS', 1);
 	// Check client IP address when validating session:
@@ -179,7 +178,7 @@
 	// if you experience weird errors and tt-rss failing to start, blank pages
 	// after login, or content encoding errors, disable it.
 
-	define('PLUGINS', 'auth_remote, auth_internal, note');
+	define('PLUGINS', 'auth_internal, note, updater');
 	// Comma-separated list of plugins to load automatically for all users.
 	// System plugins have to be specified here. Please enable at least one
 	// authentication plugin here (auth_*).

@@ -9,7 +9,7 @@ class Import_Export extends Plugin implements IHandler {
 		$this->host = $host;
 
 		$host->add_hook($host::HOOK_PREFS_TAB, $this);
-		$host->add_command("xml-import", "USER FILE: import articles from XML", $this);
+		$host->add_command("xml-import", "import articles from XML", $this, ":", "FILE");
 	}
 
 	function about() {
@@ -19,20 +19,17 @@ class Import_Export extends Plugin implements IHandler {
 	}
 
 	function xml_import($args) {
-		array_shift($args);
 
-		$username = $args[count($args) - 2];
-		$filename = $args[count($args) - 1];
-
-		if (!$username) {
-			print "error: please specify username.\n";
-			return;
-		}
+		$filename = $args['xml_import'];
 
 		if (!is_file($filename)) {
 			print "error: input filename ($filename) doesn't exist.\n";
 			return;
 		}
+
+		_debug("please enter your username:");
+
+		$username = db_escape_string($this->link, trim(read_stdin()));
 
 		_debug("importing $filename for user $username...\n");
 
@@ -86,6 +83,7 @@ class Import_Export extends Plugin implements IHandler {
 			<button dojoType=\"dijit.form.Button\" onclick=\"return importData();\" type=\"submit\">" .
 			__('Import') . "</button>";
 
+		print "</form>";
 
 		print "</div>"; # pane
 	}
@@ -165,6 +163,7 @@ class Import_Export extends Plugin implements IHandler {
 					fputs($fp, "<article>");
 
 					foreach ($line as $k => $v) {
+						$v = str_replace("]]>", "]]]]><![CDATA[>", $v);
 						fputs($fp, "<$k><![CDATA[$v]]></$k>");
 					}
 
@@ -382,7 +381,7 @@ class Import_Export extends Plugin implements IHandler {
 			}
 
 			print "<p>" .
-				vsprintf(__("Finished: ")).
+				__("Finished: ").
 				vsprintf(ngettext("%d article processed, ", "%d articles processed, ", $num_processed), $num_processed).
 				vsprintf(ngettext("%d imported, ", "%d imported, ", $num_imported), $num_imported).
 				vsprintf(ngettext("%d feed created.", "%d feeds created.", $num_feeds_created), $num_feeds_created).
@@ -418,13 +417,35 @@ class Import_Export extends Plugin implements IHandler {
 
 		print "<div style='text-align : center'>";
 
-		if (is_file($_FILES['export_file']['tmp_name'])) {
+		if ($_FILES['export_file']['error'] != 0) {
+			print_error(T_sprintf("Upload failed with error code %d",
+				$_FILES['export_file']['error']));
+			return;
+		}
 
-			$this->perform_data_import($this->link, $_FILES['export_file']['tmp_name'], $_SESSION['uid']);
+		$tmp_file = false;
 
+		if (is_uploaded_file($_FILES['export_file']['tmp_name'])) {
+			$tmp_file = tempnam(CACHE_DIR . '/upload', 'export');
+
+			$result = move_uploaded_file($_FILES['export_file']['tmp_name'],
+				$tmp_file);
+
+			if (!$result) {
+				print_error(__("Unable to move uploaded file."));
+				return;
+			}
 		} else {
-			print "<p>" . T_sprintf("Could not upload file. You might need to adjust upload_max_filesize in PHP.ini (current value = %s)", ini_get("upload_max_filesize")) . " or use CLI import tool.</p>";
+			print_error(__('Error: please upload OPML file.'));
+			return;
+		}
 
+		if (is_file($tmp_file)) {
+			$this->perform_data_import($this->link, $tmp_file, $_SESSION['uid']);
+			unlink($tmp_file);
+		} else {
+			print_error(__('No file uploaded.'));
+			return;
 		}
 
 		print "<button dojoType=\"dijit.form.Button\"

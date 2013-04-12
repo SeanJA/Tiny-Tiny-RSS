@@ -43,8 +43,6 @@
 	require_once "db.php";
 	require_once "db-prefs.php";
 
-	no_cache_incantation();
-
 	startup_gettext();
 
 	$script_started = microtime(true);
@@ -64,6 +62,11 @@
 	}
 
 	if ($_SESSION["uid"]) {
+		if (!validate_session($link)) {
+			header("Content-Type: text/json");
+			print json_encode(array("error" => array("code" => 6)));
+			return;
+		}
 		load_user_plugins($link, $_SESSION["uid"]);
 	}
 
